@@ -1,113 +1,130 @@
-import Image from 'next/image'
+"use client"
+import Image from 'next/image';
+import LoginImage from '../assets/images/login.jpg';
+import GoogleLogo from '../assets/images/Google.jpg';
+import { auth } from '../config/firebaseConfig.ts';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { AccountType } from '@/types.ts';
+import { useRouter } from 'next/navigation'
+import { addDocument, checkAccountExsitAndAdd, checkAccountIsExsit } from '@/utils/firestore.ts';
+import { useContext, useEffect } from 'react';
+import { AuthContext } from '@/context/AuthContext.tsx';
+
+
+const provider = new GoogleAuthProvider();
 
 export default function Home() {
+
+  const router = useRouter();
+
+  const {currentUser} = useContext(AuthContext);
+
+  const handleSignInWithGoogle = async () => {
+    await signInWithPopup(auth, provider)
+      .then((result) => {
+        // const credential = GoogleAuthProvider.credentialFromResult(result);
+        // const token = credential?.accessToken;
+        const { uid, displayName, email, photoURL } = result.user;
+        const account: AccountType = {
+          displayName,
+          email,
+          uid,
+          avatar: photoURL
+        }
+        checkAccountExsitAndAdd(account);
+
+      }).catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        const email = error.customData.email;
+        const credential = GoogleAuthProvider.credentialFromError(error);
+      });
+  }
+
+  useEffect(() => {
+    if (currentUser.uid === '') return;
+    return router.push('/chats');
+
+  }, [currentUser])
+
+
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="flex min-h-screen bg-white flex-col items-center justify-between p-24">
+      <div>
+        <h1
+          className="text-[##030303] text-[34px] font-medium not-italic leading-[1.02px] tracking-[1.02px] uppercase"
+        >
+          Wellcome back
+        </h1>
+
+        <form
+          className="mt-[20px]"
+          action=""
+        >
+          <label
+            htmlFor="email"
+            className="text-[#181818] text-[14px] not-italic font-medium tracking-[0.42px]"
           >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
+            Email
+          </label>
+          <input
+            className="mt-[6px] h-[41px] w-[313px] focus:outline-none block border px-1 py-2
+            rounded-xl"
+            type="email"
+            name="email"
+            id="email"
+            placeholder='Enter your email'
+          />
+
+          <div
+            className="mt-[21px]"
+          >
+            <label
+              htmlFor="password"
+              className="text-[#181818] text-[14px] not-italic font-medium tracking-[0.42px]"
+            >
+              Password
+            </label>
+            <input
+              className="mt-[6px] h-[41px] w-[313px] focus:outline-none block border px-1 py-2
+            rounded-xl"
+              type="password"
+              name="password"
+              id="password"
+              placeholder='Enter your password'
             />
-          </a>
+          </div>
+
+          <button
+            className="mt-[11px] h-[41px] w-[313px] focus:outline-none block px-1 py-2
+            rounded-xl bg-[#EA454C] text-white"
+            type="submit"
+          >
+            Sign in
+          </button>
+        </form>
+
+        <div
+          className="mt-[11px] h-[41px] w-[313px] flex flex-row justify-center gap-2 items-center
+          border rounded-xl hover:cursor-pointer"
+          onClick={() => handleSignInWithGoogle()}
+        >
+          <Image
+            src={GoogleLogo}
+            alt='Google logo'
+            priority={true}
+          />
+          <p>Sign in with Google</p>
         </div>
       </div>
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore the Next.js 13 playground.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+      <Image
+        src={LoginImage}
+        alt='login'
+      // width={20}
+      // height={20}
+      />
     </main>
   )
 }
