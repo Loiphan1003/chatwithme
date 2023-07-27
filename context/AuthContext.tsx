@@ -3,6 +3,7 @@ import React, { createContext, useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/config/firebaseConfig";
 import { AccountType } from "@/types";
+import { changeStatusActiveAccount } from "@/utils/firestore";
 
 
 interface AuthContextType {
@@ -57,6 +58,7 @@ export function AuthContextProvider({
 
   const logout = () => {
     auth.signOut();
+    changeStatusActiveAccount(currentUser.uid);
     setCurrentUser({
       avatar: "",
       displayName: "",

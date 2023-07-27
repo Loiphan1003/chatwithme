@@ -29,7 +29,7 @@ export default function Home() {
           displayName,
           email,
           uid,
-          avatar: photoURL
+          avatar: photoURL,
         }
         checkAccountExsitAndAdd(account);
 

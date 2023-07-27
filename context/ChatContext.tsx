@@ -5,6 +5,7 @@ import React, { createContext, useState } from "react";
 interface ChatContextType {
     selectUserChat: ChatHistoryType,
     handleSelectChat: (userChat: AccountType) => void,
+    handleClear: () => void,
 }
 
 export const ChatContext = createContext<ChatContextType>({
@@ -15,6 +16,9 @@ export const ChatContext = createContext<ChatContextType>({
     },
     handleSelectChat() {
 
+    },
+    handleClear() {
+        
     },
 
 })
@@ -31,11 +35,17 @@ export const ChatContextProvider = ({ children }: { children: React.ReactNode })
         setSelectUserChat(userChat)
     }
 
-    
+    const handleClear = () => {
+        setSelectUserChat({
+            avatar: '',
+            displayName: '',
+            uid: '',
+        })
+    }
 
     return (
         <ChatContext.Provider
-            value={{selectUserChat, handleSelectChat}}
+            value={{ selectUserChat, handleSelectChat, handleClear }}
         >
             {children}
         </ChatContext.Provider>

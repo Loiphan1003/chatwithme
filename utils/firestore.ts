@@ -30,28 +30,52 @@ export const addDocument = async (
 };
 
 export const checkAccountIsExsit = async (value: AccountType) => {
-  let idUserExsit: string = "";
+  let idUserExsit: AccountType = {
+    uid: "",
+    avatar: "",
+    displayName: "",
+    email: "",
+  };
+  let id: string = "";
   const q = query(collection(db, "users"), where("uid", "==", value.uid));
 
   const querySnapshot = await getDocs(q);
 
-  querySnapshot.forEach((doc: any) => {
-    return (idUserExsit = doc.id);
+  querySnapshot.forEach((doc: DocumentData) => {
+    id = doc.id;
+    return (idUserExsit = doc.data());
   });
 
-  if (idUserExsit === "") return false;
+  if (idUserExsit.uid === "") return false;
+
+  await updateDoc(doc(db, "users", id), {
+    displayName: idUserExsit.displayName,
+    avatar: idUserExsit.avatar,
+    email: idUserExsit.email,
+    uid: idUserExsit.uid,
+    isActive: true,
+  });
+
   return true;
 };
 
 export const checkAccountExsitAndAdd = async (account: AccountType) => {
   const checkAccountLogin = await checkAccountIsExsit(account);
   if (checkAccountLogin) return;
-  return addDocument("users", account);
+  const user = {
+    displayName: account.displayName,
+    avatar: account.avatar,
+    email: account.email,
+    uid: account.uid,
+    isActive: true,
+    dateUse: new Date().toUTCString(),
+  };
+  return addDocument("users", user);
 };
 
 export const findNameAccount = async (
-  searchName: string,
-  currentUserId: string
+  searchName: string
+  // currentUserId: string
 ) => {
   let accountIsFind: any[] = [];
 
@@ -85,7 +109,7 @@ export const createOrUpdateUserChats = async (
             displayName: data.displayName,
             avatar: data.avatar,
           },
-          lastMessage: '',
+          lastMessage: "",
           date: serverTimestamp(),
         },
       });
@@ -98,7 +122,7 @@ export const createOrUpdateUserChats = async (
           displayName: data.displayName,
           avatar: data.avatar,
         },
-        lastMessage: '',
+        lastMessage: "",
         date: serverTimestamp(),
       },
     });
@@ -139,33 +163,65 @@ export const sendMessageInFirestore = async (
       message: [],
     };
 
-    // find the message colection
-    // const q = query(collection(db, "chats"), where("__name__", "==", idChat));
-    // const querySnapshot = await getDocs(q);
-    // querySnapshot.forEach((doc) => {
-    //   res = { ...doc.data(), id: doc.id } as { id: string; message: any[] };
-    // });
-
-    // if (res.message === undefined) {
-    //   const temp: MessageType[] = [];
-    //   temp.push(messageSend);
-
-    //   res.message = temp;
-    // }
-
-    await updateDoc(doc(db, 'chats', idChat), {
+    await updateDoc(doc(db, "chats", idChat), {
       messages: arrayUnion({
         id: messageSend.id,
         text: messageSend.text,
         date: Timestamp.now(),
-        senderId: messageSend.senderId
-      })
-    })
+        senderId: messageSend.senderId,
+      }),
+    });
 
     console.log(res.message);
 
     return res;
   } catch (error) {
     console.log(`Send message error: ${error}`);
+  }
+};
+
+export const changeStatusActiveAccount = async (currentUserId: string) => {
+  try {
+    let user: AccountType = {
+      uid: "",
+      avatar: "",
+      displayName: "",
+      email: "",
+    };
+    let id: string = "";
+    const q = query(collection(db, "users"), where("uid", "==", currentUserId));
+
+    const querySnapshot = await getDocs(q);
+
+    querySnapshot.forEach((doc: DocumentData) => {
+      id = doc.id;
+      return (user = doc.data());
+    });
+
+    await updateDoc(doc(db, "users", id), {
+      displayName: user.displayName,
+      avatar: user.avatar,
+      email: user.email,
+      uid: user.uid,
+      isActive: false,
+      dateUse: new Date().toUTCString(),
+    });
+  } catch (error) {}
+};
+
+export const getIdUser = async (currentUserId: string) => {
+  try {
+    let id: string = "";
+    const q = query(collection(db, "users"), where("uid", "==", currentUserId));
+    const querySnapshot = await getDocs(q);
+
+    querySnapshot.forEach((doc: DocumentData) => {
+      return (id = doc.id);
+    });
+
+    return id;
+  } catch (error) {
+    console.log(error);
+    
   }
 };

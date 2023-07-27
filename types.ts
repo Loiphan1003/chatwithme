@@ -17,3 +17,12 @@ export interface MessageType {
     text: string,
     date: string,
 }
+
+export interface User {
+    uid: string,
+    displayName: string | null,
+    email: string | null,
+    avatar: string | null,
+    isActive: boolean | null,
+    dateUse: string | null,
+}

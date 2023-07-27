@@ -12,6 +12,7 @@ import { findNameAccount, handleSelectChat } from '@/utils/firestore';
 import AvatarTest from '../../assets/images/Avatar.png';
 import { Backdrop } from '../Backdrop';
 import { AccountType } from '@/types';
+import { ChatContext } from '@/context/ChatContext';
 
 
 const menus = ["Log out"];
@@ -21,7 +22,8 @@ const SearchBar = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [resultSearchTerm, setResultSearchTerm] = useState<any[]>([]);
     const debouncedSearchTerm = useDebounce(searchTerm, 500);
-    const { currentUser, logout } = useContext(AuthContext)
+    const { currentUser, logout } = useContext(AuthContext);
+    const { handleClear } = useContext(ChatContext);
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
@@ -44,6 +46,11 @@ const SearchBar = () => {
 
         handleSelectChat(combinedId, currentUser, user);
         handleCloseShowSearchList();
+    }
+
+    const handleLogout = () => {
+        logout();
+        handleClear();
     }
 
 
@@ -94,7 +101,7 @@ const SearchBar = () => {
 
                         <MenuItem
                             className="px-2 pb-1 box-border" 
-                            onClick={() => logout()}
+                            onClick={() => handleLogout()}
                         >
                             Log out
                         </MenuItem>
