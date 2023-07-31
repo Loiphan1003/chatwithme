@@ -3,7 +3,7 @@ import React, { useContext, useState } from 'react';
 import { AuthContext } from '@/context/AuthContext';
 import { ChatContext } from '@/context/ChatContext';
 import { combineId } from '@/utils';
-import { sendMessageInFirestore } from '@/utils/firestore';
+import { addLastMessage, sendMessageInFirestore } from '@/utils/firestore';
 import { v4 as uuidv4 } from 'uuid';
 import EmojiPicker, {EmojiClickData} from 'emoji-picker-react';
 
@@ -17,10 +17,17 @@ export const InputBar = () => {
     const [showPicker, setShowPicker] = useState<boolean>(false);
 
     const handleSendMessage = async () => {
+        
+        if (currentUser.uid === null || message === '') return;
         const idChat = combineId(currentUser.uid, selectUserChat.uid);
 
-        if (currentUser.uid === null) return;
         await sendMessageInFirestore(idChat, { id: uuidv4(), senderId: currentUser.uid, text: message, date: new Date().toUTCString() });
+
+        //  Add last message current user
+        addLastMessage(currentUser.uid, idChat ,{ message ,idMessage: uuidv4() })
+
+        //  Add last message user is chatting
+        addLastMessage(selectUserChat.uid, idChat ,{ message ,idMessage: uuidv4() })
 
         // Clear message typed
         setMessage('')

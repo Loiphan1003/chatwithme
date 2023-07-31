@@ -2,6 +2,8 @@
   "name": "chatwithme",
   "version": "0.1.0",
   "private": true,
+  "author": "Lợi Phan",
+  "description": "My realtime chat app",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

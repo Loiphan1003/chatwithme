@@ -17,7 +17,7 @@ export default function Home() {
 
   const router = useRouter();
 
-  const {currentUser} = useContext(AuthContext);
+  const { currentUser } = useContext(AuthContext);
 
   const handleSignInWithGoogle = async () => {
     await signInWithPopup(auth, provider)
@@ -50,7 +50,10 @@ export default function Home() {
 
 
   return (
-    <main className="flex min-h-screen bg-white flex-col items-center justify-between p-24">
+    <main
+      className="flex md:mx-auto max-w-[1160px] w-full h-screen
+      bg-white flex-col items-center justify-center md:pt-[30px] desktop:px-[30px] box-border"
+    >
       <div>
         <h1
           className="text-[##030303] text-[34px] font-medium not-italic leading-[1.02px] tracking-[1.02px] uppercase"
@@ -58,7 +61,7 @@ export default function Home() {
           Wellcome back
         </h1>
 
-        <form
+        {/* <form
           className="mt-[20px]"
           action=""
         >
@@ -103,10 +106,10 @@ export default function Home() {
           >
             Sign in
           </button>
-        </form>
+        </form> */}
 
         <div
-          className="mt-[11px] h-[41px] w-[313px] flex flex-row justify-center gap-2 items-center
+          className="mt-[22px] h-[41px] w-[313px] flex flex-row justify-center gap-2 items-center
           border rounded-xl hover:cursor-pointer"
           onClick={() => handleSignInWithGoogle()}
         >
@@ -121,9 +124,10 @@ export default function Home() {
 
       <Image
         src={LoginImage}
+        className="w-auto h-auto md:h-[50%] md:w-[60%]"
         alt='login'
-      // width={20}
-      // height={20}
+        width={0}
+        height={0}
       />
     </main>
   )

@@ -172,8 +172,6 @@ export const sendMessageInFirestore = async (
       }),
     });
 
-    console.log(res.message);
-
     return res;
   } catch (error) {
     console.log(`Send message error: ${error}`);
@@ -222,6 +220,29 @@ export const getIdUser = async (currentUserId: string) => {
     return id;
   } catch (error) {
     console.log(error);
-    
   }
+};
+
+export const addLastMessage = async (
+  currentUserId: string,
+  idChat: string,
+  { message, idMessage }: { message: string; idMessage: string }
+) => {
+  try {
+    const res = await getDoc(doc(db, "userChats", currentUserId));
+    const data = res.data();
+    if (data === undefined) return;
+    for (const key in data) {
+      if (key === idChat) {
+        const value: any = data[key];
+        value.lastMessage = {
+          idMessage,
+          message,
+          date: Timestamp.now(),
+        };
+        break;
+      }
+    }
+    await updateDoc(doc(db, "userChats", currentUserId), data);
+  } catch (error) {}
 };

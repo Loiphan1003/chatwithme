@@ -14,3 +14,5 @@ this is a chat app project I created with NextJS.
 ## Future expansion features
 - chat: send file
 - edit account info
+
+Recommend use demo in Laptop and Desktop.
