@@ -1,14 +1,13 @@
-"use client"
+"use client";
 import React, { createContext, useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/config/firebaseConfig";
-import { AccountType } from "@/types";
+import { AccountType, User } from "@/types";
 import { changeStatusActiveAccount } from "@/utils/firestore";
 
-
 interface AuthContextType {
-  currentUser: AccountType,
-  logout: () => void,
+  currentUser: User;
+  logout: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -17,10 +16,10 @@ export const AuthContext = createContext<AuthContextType>({
     displayName: "",
     email: "",
     uid: "",
+    dateUse: "",
+    isActive: false,
   },
-  logout() {
-    
-  },
+  logout() { },
 });
 
 export function AuthContextProvider({
@@ -28,12 +27,13 @@ export function AuthContextProvider({
 }: {
   children: React.ReactNode;
 }) {
-
-  const [currentUser, setCurrentUser] = useState<AccountType>({
+  const [currentUser, setCurrentUser] = useState<User>({
     avatar: "",
     displayName: "",
     email: "",
     uid: "",
+    dateUse: "",
+    isActive: false
   });
 
   useEffect(() => {
@@ -41,11 +41,13 @@ export function AuthContextProvider({
       // console.log(user);
       if (user) {
         const { displayName, photoURL, email, uid } = user;
-        const account: AccountType = {
+        const account: User = {
           avatar: photoURL,
           displayName,
           email,
           uid,
+          dateUse: "",
+          isActive: false
         };
         setCurrentUser(account);
       }
@@ -64,10 +66,14 @@ export function AuthContextProvider({
       displayName: "",
       email: "",
       uid: "",
-    })
-  }
+      dateUse: "",
+      isActive: false
+    });
+  };
 
   return (
-    <AuthContext.Provider value={{currentUser, logout}}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ currentUser, logout }}>
+      {children}
+    </AuthContext.Provider>
   );
-};
+}

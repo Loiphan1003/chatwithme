@@ -14,11 +14,11 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import { db } from "@/config/firebaseConfig";
-import { AccountType, MessageType } from "@/types";
+import { AccountType, MessageType, User } from "@/types";
 
 export const addDocument = async (
   nameColection: string,
-  value: AccountType
+  value: User
 ) => {
   try {
     await addDoc(collection(db, nameColection), value);
@@ -29,12 +29,14 @@ export const addDocument = async (
   }
 };
 
-export const checkAccountIsExsit = async (value: AccountType) => {
-  let idUserExsit: AccountType = {
+export const checkAccountIsExsit = async (value: User) => {
+  let idUserExsit: User = {
     uid: "",
     avatar: "",
     displayName: "",
     email: "",
+    dateUse: "",
+    isActive: false,
   };
   let id: string = "";
   const q = query(collection(db, "users"), where("uid", "==", value.uid));
@@ -59,19 +61,19 @@ export const checkAccountIsExsit = async (value: AccountType) => {
   return true;
 };
 
-export const checkAccountExsitAndAdd = async (account: AccountType) => {
-  const checkAccountLogin = await checkAccountIsExsit(account);
-  if (checkAccountLogin) return;
-  const user = {
-    displayName: account.displayName,
-    avatar: account.avatar,
-    email: account.email,
-    uid: account.uid,
-    isActive: true,
-    dateUse: new Date().toUTCString(),
-  };
-  return addDocument("users", user);
-};
+// export const checkAccountExsitAndAdd = async (account: AccountType) => {
+//   const checkAccountLogin = await checkAccountIsExsit(account);
+//   if (checkAccountLogin) return;
+//   const user = {
+//     displayName: account.displayName,
+//     avatar: account.avatar,
+//     email: account.email,
+//     uid: account.uid,
+//     isActive: true,
+//     dateUse: new Date().toUTCString(),
+//   };
+//   return await addDocument("users", user);
+// };
 
 export const findNameAccount = async (
   searchName: string

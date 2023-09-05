@@ -1,15 +1,14 @@
 "use client"
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState, useRef } from 'react'
 import SearchBar from '@/components/SearchBar';
 import { ChatListItem } from '@/components/ChatListItem';
 import Image from 'next/image';
 import { InputBar } from '@/components/InputBar';
-import { DateSent } from '@/components/DateSent';
 import { MessageSent } from '@/components/MessageSent';
 import avatarTest from '../../assets/images/Avatar.png';
 import { AuthContext } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { AccountType, ChatHistoryType, MessageType, User } from '@/types';
+import { AccountType, MessageType, User } from '@/types';
 import { ChatContext } from '@/context/ChatContext';
 import { DocumentData, doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/config/firebaseConfig';
@@ -32,8 +31,32 @@ export default function Chats() {
         dateUse: '',
     });
     const [messages, setMessages] = useState([]);
+    const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
-    const getChats = () => {
+    const formatTimeUse = (dateUse: string) => {
+        const date = new Date();
+        const accountDateUse = new Date(dateUse);
+        const res = date.getMinutes() - accountDateUse.getMinutes();
+        if (res > 0 && res < 60) return `Hoạt động ${res} phút trước`;
+        return "vài tiếng trước";
+    }
+
+    const getStatusUserChat = useCallback(async () => {
+        if (selectUserChat.uid === '') return;
+        const res = await getIdUser(selectUserChat.uid);
+        if (res === undefined) return;
+        const unsub = onSnapshot(doc(db, "users", res), (doc: DocumentData) => {
+            setAccountChat({ ...doc.data(), dateUse: formatTimeUse(doc.data().dateUse) });
+        });
+
+        return () => {
+            unsub()
+        }
+
+    }, [selectUserChat])
+
+    useEffect(() => {
+        if (currentUser.uid === '') return router.push('/');
         const unsub = onSnapshot(doc(db, "userChats", currentUser.uid), (doc: DocumentData) => {
             setChats(doc.data());
         });
@@ -41,35 +64,8 @@ export default function Chats() {
         return () => {
             unsub();
         }
-    }
 
-    const formatTimeUse = (dateUse: string) => {
-        const date = new Date();
-        const accountDateUse = new Date(dateUse);
-        const res = date.getMinutes() - accountDateUse.getMinutes();
-        if(res > 0 && res < 60) return `Hoạt động ${res} phút trước`;
-        return "vài tiếng trước";
-    }
-
-    const getStatusUserChat = useCallback(async () => {
-        if(selectUserChat.uid === '') return;
-        const res = await getIdUser(selectUserChat.uid);
-        if (res === undefined) return;
-        const unsub = onSnapshot(doc(db, "users", res), (doc: DocumentData) => {
-            setAccountChat({...doc.data(), dateUse: formatTimeUse(doc.data().dateUse)});
-        });
-
-        return () => {
-            unsub()
-        } 
-
-    }, [selectUserChat])
-
-    useEffect(() => {
-        if (currentUser.uid === '') return router.push('/');
-        getChats()
-
-    }, [currentUser, getChats])
+    }, [router, currentUser])
 
     useEffect(() => {
         getStatusUserChat();
@@ -91,24 +87,31 @@ export default function Chats() {
         return () => {
             unsub();
         }
-    }, [selectUserChat])
+    }, [currentUser.uid, selectUserChat])
 
     const handleFormatTypeMessage = (senderId: string) => {
         if (senderId === currentUser.uid) return 'send';
         return 'otherSend';
     }
 
-
-
+    const scrollToBottom = () => {
+        if (messagesContainerRef.current) {
+            messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+        }
+    }
 
     useEffect(() => {
         handleGetConservasion()
     }, [handleGetConservasion])
 
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages])
+
 
     return (
         <div
-            className="bg-white h-[100vh] flex flex-row"
+            className="bg-white h-[100vh] flex flex-row overflow-y-hidden"
         >
             <div
                 className="w-[364px] h-full text-black border-r border-solid border-r-[#D9DCE0]"
@@ -116,7 +119,7 @@ export default function Chats() {
                 <SearchBar />
 
                 <div
-                    className="mt-2 h-[92%] overflow-y-auto overflow-x-hidden"
+                    className="h-[92%] overflow-y-auto overflow-x-hidden"
                 >
                     {chats !== undefined && Object.entries(chats)?.sort((a: any, b: any) => { return b[1].date - a[1].date }).map((chat: any) => {
                         return (
@@ -124,8 +127,9 @@ export default function Chats() {
                                 key={chat[0]}
                                 data={chat[1].userInfo}
                                 lastMessages={chat[1].lastMessage}
-                                handleClick={() =>
-                                    handleSelectChatInSideBar(chat[1].userInfo)
+                                handleClick={(user) => {
+                                    handleSelectChatInSideBar(user)
+                                    }
                                 }
                             />
                         )
@@ -133,13 +137,13 @@ export default function Chats() {
                 </div>
             </div>
 
-            <div className="text-black w-full">
+            <div className="text-black bg-[#8BABD8] w-full">
 
                 {selectUserChat.uid !== '' &&
                     <React.Fragment>
                         <div
                             className="py-2 px-4 w-auto flex flex-row justify-between items-center
-                    border-b border-solid border-b-navyGrey"
+                            border-b border-solid border-b-navyGrey bg-white"
                         >
                             <div
                                 className="flex flex-row gap-[16px] items-center"
@@ -160,14 +164,14 @@ export default function Chats() {
                                         <p
                                             className="text-navyGrey text-[14px] not-italic font-normal leading-[18px]"
                                         >
-                                            đang hoạt động
+                                            online
                                         </p> :
 
-                                        <p 
+                                        <p
                                             className="text-navyGrey text-[14px] not-italic font-normal leading-[18px]
-                                            " 
+                                            "
                                         >
-                                            {accountChat.dateUse}
+                                            offline
                                         </p>
                                     }
 
@@ -194,13 +198,14 @@ export default function Chats() {
 
                         <div
                             className="w-full h-[93vh] bg-[#8BABD8] relative 
-                    flex flex-col"
+                            flex flex-col"
                         >
                             <div
                                 className="h-[93%] overflow-y-auto"
+                                ref={messagesContainerRef}
                             >
                                 <div
-                                    className="w-auto px-[12px] pt-[24px] box-border"
+                                    className="w-auto px-[12px] pt-[24px] pb-8 box-border"
                                 >
                                     {messages !== undefined && messages.map((m: MessageType) => (
                                         <React.Fragment

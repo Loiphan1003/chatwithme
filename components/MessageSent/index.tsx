@@ -1,5 +1,4 @@
 "use client"
-import { Timestamp } from 'firebase/firestore';
 import React, { useCallback, useEffect, useState } from 'react'
 
 interface MessageSendProps {
@@ -31,7 +30,7 @@ export const MessageSent = (props: MessageSendProps) => {
         const minutes = date.getMinutes();
         const t = `${hours}:${minutes}`
         setTime(t);
-    }, [time])
+    }, [props.time])
 
     useEffect(() => {
         handleFormatTypeTimeSend()

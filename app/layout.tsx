@@ -1,9 +1,11 @@
 "use client"
+import React from 'react';
 import { AuthContextProvider } from '@/context/AuthContext'
 import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import ChatContextProvider from '@/context/ChatContext'
+import ChatContextProvider from '@/context/ChatContext';
+import { ChakraProvider } from '@chakra-ui/react';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -26,13 +28,15 @@ export default function RootLayout({
       </head>
       <AuthContextProvider>
         <ChatContextProvider>
-          <body className={inter.className}>
-            <div
-              className="bg-white w-full h-[100vh]"
-            >
-              {children}
-            </div>
-          </body>
+          <ChakraProvider>
+            <body className={inter.className}>
+              <div
+                className="bg-white w-full h-[100vh]"
+              >
+                {children}
+              </div>
+            </body>
+          </ChakraProvider>
         </ChatContextProvider>
       </AuthContextProvider>
     </html>

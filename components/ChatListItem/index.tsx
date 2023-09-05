@@ -25,7 +25,7 @@ export const ChatListItem = (props: ChatListItemProps) => {
     useEffect(() => {
         if(props.lastMessages.date === undefined) return
         handleFormatTime(props.lastMessages.date)
-    }, [time, handleFormatTime])
+    }, [time, handleFormatTime, props.lastMessages.date])
     
 
 
